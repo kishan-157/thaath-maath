@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, ExternalLink } from 'lucide-react';
+import { X, Copy, Check, ExternalLink, CheckCircle2 } from 'lucide-react';
 
 interface VercelDeployModalProps {
   isOpen: boolean;
@@ -12,12 +12,9 @@ export const VercelDeployModal: React.FC<VercelDeployModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   const gitCommands = [
-    'git init',
     'git add .',
-    'git commit -m "feat: Thaath Maath Restaurant & Banquet Nikol website"',
-    'git branch -M main',
-    'git remote add origin https://github.com/YOUR_USERNAME/thaath-maath-restaurant.git',
-    'git push -u origin main',
+    'git commit -m "fix: resolve Vercel npm ERESOLVE peer dependency and add WhatsApp 9724852137"',
+    'git push origin main',
   ].join('\n');
 
   const handleCopyCommands = () => {
@@ -37,10 +34,10 @@ export const VercelDeployModal: React.FC<VercelDeployModalProps> = ({ isOpen, on
         <div className="px-6 py-5 border-b border-[#E5E0D8] flex items-center justify-between bg-[#F2EFE9]">
           <div>
             <h2 id="vercel-deploy-title" className="font-display text-2xl font-bold text-[#141413]">
-              GitHub to Vercel Deployment Guide
+              GitHub to Vercel Deployment Fix Applied
             </h2>
             <p className="text-xs text-[#5C5852] mt-0.5">
-              Pre-configured with <span className="font-mono-num">vercel.json</span>, Vite build pipeline, and SEO metadata
+              Resolved <span className="font-mono-num">npm ERESOLVE</span> peer dependency conflict & stale lockfile
             </p>
           </div>
           <button
@@ -54,12 +51,30 @@ export const VercelDeployModal: React.FC<VercelDeployModalProps> = ({ isOpen, on
         </div>
 
         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          <div className="p-4 bg-[#1B5E20]/10 border border-[#1B5E20]/30 rounded-lg space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#1B5E20]">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              Why Vercel Failed Previously & How It Is Fixed Now:
+            </div>
+            <ul className="text-xs text-[#141413] space-y-1.5 pl-6 list-disc">
+              <li>
+                <strong>Fixed in <span className="font-mono-num">package.json</span>:</strong> Updated <span className="font-mono-num">esbuild</span> from <span className="font-mono-num">^0.25.0</span> to <span className="font-mono-num">^0.27.0</span> to match Vite 8 peer dependencies.
+              </li>
+              <li>
+                <strong>Added <span className="font-mono-num">.npmrc</span> & updated <span className="font-mono-num">vercel.json</span>:</strong> Configured <span className="font-mono-num">legacy-peer-deps=true</span> and <span className="font-mono-num">&quot;installCommand&quot;: &quot;npm install --legacy-peer-deps&quot;</span>.
+              </li>
+              <li>
+                <strong>Removed stale <span className="font-mono-num">bun.lock</span>:</strong> Prevented Vercel from failing with a frozen-lockfile error.
+              </li>
+            </ul>
+          </div>
+
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-[#141413]">
-              01. Push Repository to GitHub
+              01. Push Updated Files to GitHub
             </h3>
             <p className="text-xs text-[#5C5852] leading-relaxed">
-              Export or clone this project, create a new repository on GitHub (for example, <span className="font-mono-num text-[#141413]">thaath-maath-restaurant</span>), and run these commands in your terminal:
+              Export or sync this updated code to your GitHub repository so Vercel automatically triggers a clean deployment:
             </p>
             <div className="relative bg-[#141413] text-[#FAF8F5] rounded-lg p-4">
               <pre className="text-xs font-mono-num overflow-x-auto leading-relaxed">
@@ -78,12 +93,14 @@ export const VercelDeployModal: React.FC<VercelDeployModalProps> = ({ isOpen, on
 
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-[#141413]">
-              02. Import Repository in Vercel Dashboard
+              02. Vercel Build Settings (Auto-Detected via <span className="font-mono-num">vercel.json</span>)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-3.5 bg-[#F2EFE9] border border-[#E5E0D8] rounded-lg">
-                <div className="text-[#5C5852]">Framework Preset</div>
-                <div className="font-mono-num font-semibold text-[#141413] mt-1">Vite</div>
+                <div className="text-[#5C5852]">Install Command</div>
+                <div className="font-mono-num font-semibold text-[#141413] mt-1">
+                  npm install --legacy-peer-deps
+                </div>
               </div>
               <div className="p-3.5 bg-[#F2EFE9] border border-[#E5E0D8] rounded-lg">
                 <div className="text-[#5C5852]">Build Command</div>
@@ -95,15 +112,6 @@ export const VercelDeployModal: React.FC<VercelDeployModalProps> = ({ isOpen, on
               </div>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-[#141413]">
-              03. Automatic <span className="font-mono-num">vercel.json</span> SPA Routing
-            </h3>
-            <p className="text-xs text-[#5C5852] leading-relaxed">
-              We have already included <span className="font-mono-num text-[#141413]">/vercel.json</span> at the project root. Zero environment variables or API keys are required for this static restaurant & banquet booking application—just click <strong>Deploy</strong> on Vercel and your live URL will be ready in ~35 seconds.
-            </p>
-          </div>
         </div>
 
         <div className="px-6 py-4 border-t border-[#E5E0D8] bg-[#F2EFE9] flex items-center justify-between">
@@ -113,7 +121,7 @@ export const VercelDeployModal: React.FC<VercelDeployModalProps> = ({ isOpen, on
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9E2A2B] hover:underline"
           >
-            Open Vercel Import Page
+            Open Vercel Dashboard
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
           <button

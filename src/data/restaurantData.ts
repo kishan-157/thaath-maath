@@ -73,8 +73,10 @@ export const RESTAURANT_INFO = {
     'https://www.google.com/maps/search/?api=1&query=Thaath+Maath+A+Pure+Veg+MultiCuisine+Restaurant+%26+Banquet+Hilltown+Plaza+Nikol+Ahmedabad',
   googleKnowledgeGraphUrl:
     'https://www.google.com/search?kgmid=/g/11vq0zjpmc&q=Thaath+Maath+I+A+Pure+Veg+MultiCuisine+Restaurant+%26+Banquet',
-  phonePrimary: '+91 98984 72300',
-  phoneBanquet: '+91 98984 72301',
+  phonePrimary: '+91 97248 52137',
+  phoneBanquet: '+91 97248 52137',
+  whatsappNumber: '919724852137',
+  whatsappDisplay: '+91 97248 52137',
   email: 'reservations@thaathmaathnikol.in',
   lunchHours: '11:30 AM – 3:00 PM',
   dinnerHours: '7:00 PM – 11:00 PM',
@@ -84,6 +86,10 @@ export const RESTAURANT_INFO = {
   banquetCapacity: '50 to 350 Guests',
   dietaryCompliance: '100% Pure Vegetarian · Dedicated Jain Kitchen Counter',
 };
+
+export function buildWhatsAppUrl(message: string): string {
+  return `https://wa.me/${RESTAURANT_INFO.whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
 
 export const MENU_ITEMS: MenuItem[] = [
   {

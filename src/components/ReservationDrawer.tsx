@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Calendar, Users, Clock, Copy, Check, Trash2, Plus, Minus } from 'lucide-react';
-import { MENU_ITEMS, RESTAURANT_INFO } from '../data/restaurantData';
+import {
+  X,
+  CheckCircle2,
+  Calendar,
+  Users,
+  Clock,
+  Copy,
+  Check,
+  Trash2,
+  Plus,
+  Minus,
+  MessageSquare,
+  ExternalLink,
+} from 'lucide-react';
+import { MENU_ITEMS, RESTAURANT_INFO, buildWhatsAppUrl } from '../data/restaurantData';
 
 export interface SelectedDishEntry {
   itemId: string;
@@ -44,7 +57,9 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
   const [session, setSession] = useState<'lunch' | 'dinner'>('dinner');
   const [timeSlot, setTimeSlot] = useState('08:00 PM');
   const [partySize, setPartySize] = useState(4);
-  const [dietaryNote, setDietaryNote] = useState<'Regular Pure Veg' | 'Jain Counter Required' | 'Swaminarayan Friendly'>('Regular Pure Veg');
+  const [dietaryNote, setDietaryNote] = useState<
+    'Regular Pure Veg' | 'Jain Counter Required' | 'Swaminarayan Friendly'
+  >('Regular Pure Veg');
   const [occasion, setOccasion] = useState('Family Dinner & Buffet');
   const [specialNotes, setSpecialNotes] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -52,6 +67,7 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
     referenceId: string;
     timestamp: string;
     summaryText: string;
+    whatsappUrl: string;
   } | null>(null);
   const [copiedReceipt, setCopiedReceipt] = useState(false);
 
@@ -82,6 +98,69 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
     setTimeSlot(newSession === 'lunch' ? '12:15 PM' : '08:30 PM');
   };
 
+  const buildInquiryText = (refNum: string) => {
+    const cleanName = guestName.trim() || 'Guest Inquiry';
+    const cleanPhone = phone.trim() || 'Not specified';
+    const dishLines =
+      populatedDishes.length > 0
+        ? populatedDishes
+            .map(
+              (d) =>
+                `• ${d.quantity}x ${d.item.name} (${d.jainRequested ? 'Jain' : 'Regular'}) - ₹${
+                  d.item.price * d.quantity
+                }`
+            )
+            .join('\n')
+        : '• Walk-in Unlimited Buffet / Table Selection';
+
+    if (mode === 'banquet' && banquetDraft) {
+      return [
+        `*THAATH MAATH — BANQUET HALL INQUIRY (${refNum})*`,
+        `----------------------------------`,
+        `*Guest Name:* ${cleanName}`,
+        `*Customer Mobile:* ${cleanPhone}`,
+        `*Occasion:* ${occasion}`,
+        `*Event Date:* ${date}`,
+        `*Session & Time:* ${session === 'lunch' ? 'Lunch' : 'Dinner'} (${timeSlot})`,
+        `*Selected Package:* ${banquetDraft.packageName} (₹${banquetDraft.pricePerPlate}/plate)`,
+        `*Expected Guests:* ${banquetDraft.guests} Guests`,
+        `*Dietary Preference:* ${dietaryNote}`,
+        banquetDraft.addonsList.length > 0
+          ? `*Add-Ons:* ${banquetDraft.addonsList.join(', ')}`
+          : `*Add-Ons:* Standard Package Inclusions`,
+        `*Estimated Event Total:* ₹${banquetDraft.estimatedTotal.toLocaleString('en-IN')}`,
+        specialNotes.trim() ? `*Special Instructions:* ${specialNotes.trim()}` : '',
+        `----------------------------------`,
+        `Venue: 3rd Floor, Hilltown Plaza, SP Ring Road, Nikol, Ahmedabad`,
+      ]
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    return [
+      `*THAATH MAATH — TABLE & BUFFET INQUIRY (${refNum})*`,
+      `----------------------------------`,
+      `*Guest Name:* ${cleanName}`,
+      `*Customer Mobile:* ${cleanPhone}`,
+      `*Occasion:* ${occasion}`,
+      `*Date & Time:* ${date} at ${timeSlot} (${session === 'lunch' ? 'Lunch' : 'Dinner'})`,
+      `*Party Size:* ${partySize} Guests`,
+      `*Dietary Preference:* ${dietaryNote}`,
+      `*Selected Menu / Buffet Items:*`,
+      dishLines,
+      dishesSubtotal > 0
+        ? `*Estimated Pre-Order Subtotal:* ₹${dishesSubtotal.toLocaleString('en-IN')}`
+        : '',
+      specialNotes.trim() ? `*Special Instructions:* ${specialNotes.trim()}` : '',
+      `----------------------------------`,
+      `Venue: 3rd Floor, Hilltown Plaza, Nikol, Ahmedabad`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  };
+
+  const liveDraftWhatsappUrl = buildWhatsAppUrl(buildInquiryText('DIRECT-WA'));
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -90,55 +169,23 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
     const cleanPhone = phone.replace(/\s+/g, '');
 
     if (cleanName.length < 2) {
-      setErrorMessage('Please enter your full name for the reservation desk.');
+      setErrorMessage('Please enter your full name for the WhatsApp inquiry.');
       return;
     }
     if (!/^[+]?[0-9]{10,13}$/.test(cleanPhone)) {
-      setErrorMessage('Please enter a valid 10-digit Indian mobile number.');
+      setErrorMessage('Please enter a valid 10-digit mobile number.');
       return;
     }
 
     const refNum = `TM-${Math.floor(1000 + Math.random() * 9000)}`;
-    const dishLines =
-      populatedDishes.length > 0
-        ? populatedDishes
-            .map(
-              (d) =>
-                `${d.quantity}x ${d.item.name} (${d.jainRequested ? 'Jain' : 'Regular'}) - ₹${
-                  d.item.price * d.quantity
-                }`
-            )
-            .join('\n')
-        : 'Walk-in Buffet / Table Selection';
-
-    const summaryText =
-      mode === 'banquet' && banquetDraft
-        ? [
-            `THAATH MAATH BANQUET INQUIRY (${refNum})`,
-            `Guest: ${cleanName} (${cleanPhone})`,
-            `Event Date: ${date} · ${session === 'lunch' ? 'Lunch' : 'Dinner'} (${timeSlot})`,
-            `Package: ${banquetDraft.packageName} @ ₹${banquetDraft.pricePerPlate}/plate`,
-            `Expected Guests: ${banquetDraft.guests} Guests`,
-            `Dietary Line: ${dietaryNote}`,
-            `Estimated Total: ₹${banquetDraft.estimatedTotal.toLocaleString('en-IN')}`,
-            `Venue: 3rd Floor, Hilltown Plaza, SP Ring Road, Nikol, Ahmedabad`,
-          ].join('\n')
-        : [
-            `THAATH MAATH TABLE RESERVATION (${refNum})`,
-            `Guest: ${cleanName} (${cleanPhone})`,
-            `Date & Time: ${date} at ${timeSlot} (${session === 'lunch' ? 'Lunch' : 'Dinner'})`,
-            `Party Size: ${partySize} Guests · ${dietaryNote}`,
-            `Pre-Selected Items:\n${dishLines}`,
-            dishesSubtotal > 0 ? `Pre-Order Subtotal: ₹${dishesSubtotal.toLocaleString('en-IN')}` : '',
-            `Venue: 3rd Floor, Hilltown Plaza, Nikol, Ahmedabad`,
-          ]
-            .filter(Boolean)
-            .join('\n');
+    const summaryText = buildInquiryText(refNum);
+    const whatsappUrl = buildWhatsAppUrl(summaryText);
 
     setConfirmedBooking({
       referenceId: refNum,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       summaryText,
+      whatsappUrl,
     });
   };
 
@@ -161,11 +208,16 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
         <div>
           <div className="sticky top-0 z-10 bg-[#FAF8F5]/95 backdrop-blur-sm px-6 py-5 border-b border-[#E5E0D8] flex items-center justify-between">
             <div>
-              <h2 id="reservation-drawer-title" className="font-display text-2xl font-bold tracking-tight text-[#141413]">
-                {mode === 'banquet' ? 'Banquet Event Reservation' : 'Table & Buffet Reservation'}
+              <h2
+                id="reservation-drawer-title"
+                className="font-display text-2xl font-bold tracking-tight text-[#141413]"
+              >
+                {mode === 'banquet'
+                  ? 'Banquet WhatsApp Inquiry'
+                  : 'Table & Buffet WhatsApp Booking'}
               </h2>
               <p className="text-xs text-[#5C5852] mt-0.5">
-                {RESTAURANT_INFO.addressLine1} · Nikol, Ahmedabad
+                Direct WhatsApp Desk: <span className="font-mono-num font-semibold text-[#1B5E20]">{RESTAURANT_INFO.whatsappDisplay}</span> · Nikol, Ahmedabad
               </p>
             </div>
             <button
@@ -217,16 +269,32 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                   <CheckCircle2 className="w-6 h-6 text-[#1B5E20] shrink-0 mt-0.5" />
                   <div>
                     <div className="text-xs font-mono-num text-[#1B5E20] font-medium">
-                      Booking Reference #{confirmedBooking.referenceId} · Confirmed at {confirmedBooking.timestamp}
+                      Inquiry Reference #{confirmedBooking.referenceId} · Ready for WhatsApp ({RESTAURANT_INFO.whatsappDisplay})
                     </div>
                     <h3 className="font-display text-2xl font-bold text-[#141413] mt-1">
-                      Your table & hospitality request is registered
+                      Send Your Inquiry Directly to Our WhatsApp Desk
                     </h3>
                     <p className="text-sm text-[#5C5852] mt-1">
-                      Present reference <span className="font-mono-num font-semibold text-[#141413]">{confirmedBooking.referenceId}</span> at the 3rd Floor Reception Desk, Hilltown Plaza, Nikol.
+                      Click the green button below to send your complete booking details to{' '}
+                      <span className="font-mono-num font-semibold text-[#141413]">
+                        {RESTAURANT_INFO.whatsappDisplay}
+                      </span>{' '}
+                      on WhatsApp for instant confirmation.
                     </p>
                   </div>
                 </div>
+
+                {/* Primary Direct WhatsApp Action */}
+                <a
+                  href={confirmedBooking.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 px-5 bg-[#1B5E20] hover:bg-[#144718] text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Send Inquiry on WhatsApp (9724852137)
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
 
                 <pre className="bg-[#FAF8F5] border border-[#E5E0D8] rounded-lg p-4 text-xs font-mono-num text-[#141413] whitespace-pre-wrap leading-relaxed">
                   {confirmedBooking.summaryText}
@@ -236,17 +304,17 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                   <button
                     type="button"
                     onClick={handleCopySummary}
-                    className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#9E2A2B] text-white rounded-lg hover:bg-[#822021] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#141413] text-white rounded-lg hover:bg-[#2C2A28] transition-colors cursor-pointer whitespace-nowrap shrink-0"
                   >
                     {copiedReceipt ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copiedReceipt ? 'Pass Copied to Clipboard' : 'Copy Booking Pass'}
+                    {copiedReceipt ? 'Copied to Clipboard' : 'Copy Inquiry Text'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmedBooking(null)}
                     className="px-4 py-2.5 text-xs font-semibold text-[#141413] border border-[#E5E0D8] bg-[#FAF8F5] rounded-lg hover:bg-[#E5E0D8]/50 transition-colors cursor-pointer whitespace-nowrap shrink-0"
                   >
-                    Modify Details
+                    Edit Inquiry Details
                   </button>
                 </div>
               </div>
@@ -262,7 +330,8 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                       </span>
                     </div>
                     <div className="text-base font-semibold text-[#141413]">
-                      {banquetDraft.packageName} · <span className="font-mono-num">{banquetDraft.guests}</span> Guests
+                      {banquetDraft.packageName} ·{' '}
+                      <span className="font-mono-num">{banquetDraft.guests}</span> Guests
                     </div>
                     {banquetDraft.addonsList.length > 0 && (
                       <div className="text-xs text-[#5C5852]">
@@ -282,7 +351,8 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                   <div className="p-4 bg-[#F2EFE9] border border-[#E5E0D8] rounded-xl space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-[#141413]">
-                        Pre-Selected Buffet & À La Carte Items ({populatedDishes.reduce((a, b) => a + b.quantity, 0)})
+                        Pre-Selected Buffet & À La Carte Items (
+                        {populatedDishes.reduce((a, b) => a + b.quantity, 0)})
                       </span>
                       <button
                         type="button"
@@ -296,9 +366,14 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
 
                     <div className="divide-y divide-[#E5E0D8]">
                       {populatedDishes.map(({ item, quantity, jainRequested }) => (
-                        <div key={item.id} className="py-2.5 flex items-center justify-between gap-3">
+                        <div
+                          key={item.id}
+                          className="py-2.5 flex items-center justify-between gap-3"
+                        >
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-[#141413] truncate">{item.name}</p>
+                            <p className="text-xs font-semibold text-[#141413] truncate">
+                              {item.name}
+                            </p>
                             <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5C5852]">
                               <span className="font-mono-num">₹{item.price}</span>
                               {item.jainAvailable && (
@@ -326,7 +401,9 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                               >
                                 <Minus className="w-3 h-3" />
                               </button>
-                              <span className="px-2 text-xs font-mono-num font-semibold">{quantity}</span>
+                              <span className="px-2 text-xs font-mono-num font-semibold">
+                                {quantity}
+                              </span>
                               <button
                                 type="button"
                                 onClick={() => onUpdateDishQty(item.id, 1)}
@@ -375,14 +452,14 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#141413] mb-1.5">
-                      Mobile Number (WhatsApp) *
+                      Your Mobile Number *
                     </label>
                     <input
                       type="tel"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 98980 00000"
+                      placeholder="e.g., 98980 00000"
                       className="w-full px-3.5 py-2.5 text-sm font-mono-num bg-white border border-[#E5E0D8] rounded-lg focus:outline-none focus:border-[#9E2A2B]"
                     />
                   </div>
@@ -544,14 +621,27 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-3.5 px-5 bg-[#9E2A2B] hover:bg-[#822021] text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
-                >
-                  {mode === 'banquet'
-                    ? 'Confirm Banquet Inquiry & Generate Quote Pass'
-                    : 'Confirm Table Reservation at Hilltown Plaza'}
-                </button>
+                <div className="space-y-2.5 pt-1">
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 px-5 bg-[#9E2A2B] hover:bg-[#822021] text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+                  >
+                    {mode === 'banquet'
+                      ? 'Generate Banquet Quote & Send to WhatsApp'
+                      : 'Generate Booking Pass & Send to WhatsApp'}
+                  </button>
+
+                  <a
+                    href={liveDraftWhatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 bg-[#1B5E20] hover:bg-[#144718] text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Direct Instant WhatsApp Inquiry (9724852137)
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </form>
             )}
           </div>
@@ -560,13 +650,13 @@ export const ReservationDrawer: React.FC<ReservationDrawerProps> = ({
         {/* Footer Info inside Drawer */}
         <div className="p-6 border-t border-[#E5E0D8] bg-[#F2EFE9]/60 text-xs text-[#5C5852] space-y-1">
           <div className="font-semibold text-[#141413]">
-            Thaath Maath Reception Desk · Hilltown Plaza, 3rd Floor
+            Thaath Maath Reception & WhatsApp Desk · Hilltown Plaza, 3rd Floor
           </div>
           <div>
             Near Amar Jawan Circle, Sardar Patel Ring Road, Nikol, Ahmedabad 380049
           </div>
           <div className="font-mono-num">
-            Direct Line: {RESTAURANT_INFO.phonePrimary} · Zero advance fee for table bookings
+            Official Inquiry WhatsApp: {RESTAURANT_INFO.whatsappDisplay}
           </div>
         </div>
       </div>

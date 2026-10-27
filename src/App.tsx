@@ -18,6 +18,7 @@ import {
   Users,
   Utensils,
   ArrowUpRight,
+  MessageSquare,
 } from 'lucide-react';
 import {
   RESTAURANT_INFO,
@@ -26,6 +27,7 @@ import {
   BANQUET_ADDONS,
   GUEST_REVIEWS,
   MenuItem,
+  buildWhatsAppUrl,
 } from './data/restaurantData';
 import { CulinaryArtwork } from './components/CulinaryArtwork';
 import {
@@ -880,13 +882,32 @@ export default function App() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={openBanquetBooking}
-                className="w-full py-3.5 px-5 bg-[#9E2A2B] hover:bg-[#822021] text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
-              >
-                Lock Banquet Quote & Check Hall Availability
-              </button>
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={openBanquetBooking}
+                  className="w-full py-3.5 px-5 bg-[#9E2A2B] hover:bg-[#822021] text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  Lock Banquet Quote & Check Hall Availability
+                </button>
+                <a
+                  href={buildWhatsAppUrl(
+                    `*THAATH MAATH — BANQUET QUOTE INQUIRY*\nPackage: ${activeBanquetPkg.name} (₹${activeBanquetPkg.pricePerPlate}/plate)\nExpected Guests: ${banquetGuests} Guests\nAdd-Ons: ${
+                      banquetDraft.addonsList.length > 0
+                        ? banquetDraft.addonsList.join(', ')
+                        : 'Standard Inclusions'
+                    }\nEstimated Total: ₹${banquetEstimate.toLocaleString(
+                      'en-IN'
+                    )}\nVenue: Hilltown Plaza, Nikol, Ahmedabad`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 bg-[#1B5E20] hover:bg-[#144718] text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Send Banquet Quote on WhatsApp (9724852137)
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -1018,6 +1039,18 @@ export default function App() {
 
               <div className="pt-4 border-t border-[#E5E0D8] flex flex-wrap items-center gap-3">
                 <a
+                  href={buildWhatsAppUrl(
+                    `Hello Thaath Maath (Hilltown Plaza, Nikol)! I would like to inquire about a Table / Buffet / Banquet reservation.`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1B5E20] text-white rounded-lg hover:bg-[#144718] transition-colors whitespace-nowrap shrink-0"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  WhatsApp Inquiry (9724852137)
+                </a>
+
+                <a
                   href={RESTAURANT_INFO.googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1039,16 +1072,6 @@ export default function App() {
                   )}
                   {copiedAddress ? 'Address Copied' : 'Copy Full Address'}
                 </button>
-
-                <a
-                  href={RESTAURANT_INFO.googleKnowledgeGraphUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#9E2A2B] hover:underline whitespace-nowrap shrink-0 ml-auto"
-                >
-                  Google Listing Profile
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
               </div>
             </div>
 
