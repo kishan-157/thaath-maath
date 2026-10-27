@@ -35,7 +35,6 @@ import {
   SelectedDishEntry,
   BanquetDraftConfig,
 } from './components/ReservationDrawer';
-import { VercelDeployModal } from './components/VercelDeployModal';
 
 export default function App() {
   // Hero Interactive Showcase Mode
@@ -63,10 +62,9 @@ export default function App() {
     'addon-jain-counter',
   ]);
 
-  // Drawers & Modals
+  // Drawers
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<'table' | 'banquet'>('table');
-  const [deployModalOpen, setDeployModalOpen] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
 
   // Filtered Menu Items
@@ -302,13 +300,6 @@ export default function App() {
                   >
                     Configure Banquet Event
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => setDeployModalOpen(true)}
-                    className="px-4 py-3.5 text-xs font-semibold text-[#141413] bg-white hover:bg-[#F2EFE9] border border-[#E5E0D8] rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-                  >
-                    GitHub → Vercel Guide
-                  </button>
                 </div>
 
                 <div className="pt-5 border-t border-[#E5E0D8] flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#5C5852]">
@@ -1197,13 +1188,6 @@ export default function App() {
               <a href="#location-hours" className="hover:text-white transition-colors">
                 Directions
               </a>
-              <button
-                type="button"
-                onClick={() => setDeployModalOpen(true)}
-                className="text-[#F3D088] hover:underline font-medium cursor-pointer"
-              >
-                GitHub → Vercel Deploy Guide
-              </button>
             </div>
           </div>
 
@@ -1229,12 +1213,6 @@ export default function App() {
         onToggleDishJain={handleToggleDishJain}
         onClearDishes={() => setSelectedDishes([])}
         banquetDraft={banquetDraft}
-      />
-
-      {/* GitHub to Vercel Deployment Assistant Modal */}
-      <VercelDeployModal
-        isOpen={deployModalOpen}
-        onClose={() => setDeployModalOpen(false)}
       />
     </div>
   );
