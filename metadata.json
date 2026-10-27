@@ -1,0 +1,6 @@
+{
+  "name": "Thaath Maath — Pure Veg MultiCuisine Restaurant & Banquet",
+  "description": "Official dining, grand buffet, and banquet reservation platform for Thaath Maath Pure Veg MultiCuisine Restaurant & Banquet at Hilltown Plaza, Nikol, Ahmedabad.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
